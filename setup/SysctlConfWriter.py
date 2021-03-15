@@ -1,4 +1,5 @@
 import re
+import subprocess
 
 from . import FileEntity
 
@@ -22,6 +23,12 @@ class SysctlConfWriter:
         fe.write()
         return None
 
+    @staticmethod
+    def call_sysctl_p() -> None:
+        subprocess.call(['sysctl', '-p'])
+        return None
+
     def run(self) -> None:
         self.uncomment_ip_forward()
+        self.call_sysctl_p()
         return None

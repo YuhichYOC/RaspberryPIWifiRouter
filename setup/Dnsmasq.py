@@ -1,9 +1,10 @@
 import os
+import subprocess
 
 from . import FileEntity
 
 
-class DnsmasqConfWriter:
+class Dnsmasq:
 
     def __init__(self):
         self.f_domain_name = ''
@@ -62,12 +63,18 @@ class DnsmasqConfWriter:
         self.f_router_ip = arg
 
     @staticmethod
+    def install_dnsmasq() -> None:
+        subprocess.call(['apt', 'install', '-y', 'dnsmasq'])
+        return None
+
+    @staticmethod
     def delete_conf_if_exists() -> None:
         if os.path.isfile('/etc/dnsmasq.conf'):
             os.remove('/etc/dnsmasq.conf')
         return None
 
     def write(self) -> None:
+        fe = FileEntity.FileEntity()
         content = [
             'domain-needed',
             'bogus-priv',
@@ -85,13 +92,30 @@ class DnsmasqConfWriter:
             'log-queries',
             'log-facility=/var/log/dnsmasq.log',
         ]
-        fe = FileEntity.FileEntity()
         fe.path = '/etc/dnsmasq.conf'
+        fe.content = content
+        fe.write()
+        content = [
+            'nameserver 8.8.8.8',
+            'nameserver 8.8.4.4',
+        ]
+        fe.path = '/etc/resolv.dnsmasq.conf'
+        fe.content = content
+        fe.write()
+        content = [
+            '/var/log/dnsmasq.log {',
+            '    missingok',
+            '    rotate 9',
+            '    maxsize 100M',
+            '}',
+        ]
+        fe.path = '/etc/logrotate.d/dnsmasq'
         fe.content = content
         fe.write()
         return None
 
     def run(self) -> None:
+        self.install_dnsmasq()
         self.delete_conf_if_exists()
         self.write()
         return None
