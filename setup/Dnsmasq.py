@@ -73,7 +73,7 @@ class Dnsmasq:
             subprocess.call(['mv', '/etc/dnsmasq.conf', '/etc/dnsmasq.conf.org'])
         return None
 
-    def write(self) -> None:
+    def write_etc_dnsmasq_conf(self) -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/dnsmasq.conf'
         fe.content = [
@@ -94,12 +94,22 @@ class Dnsmasq:
             'log-facility=/var/log/dnsmasq.log',
         ]
         fe.write()
+        return None
+
+    @staticmethod
+    def write_etc_resolv_dnsmasq_conf() -> None:
+        fe = FileEntity.FileEntity()
         fe.path = '/etc/resolv.dnsmasq.conf'
         fe.content = [
             'nameserver 8.8.8.8',
             'nameserver 8.8.4.4',
         ]
         fe.write()
+        return None
+
+    @staticmethod
+    def write_etc_logrotate_d_dnsmasq() -> None:
+        fe = FileEntity.FileEntity()
         fe.path = '/etc/logrotate.d/dnsmasq'
         fe.content = [
             '/var/log/dnsmasq.log {',
@@ -109,6 +119,12 @@ class Dnsmasq:
             '}',
         ]
         fe.write()
+        return None
+
+    def write(self) -> None:
+        self.write_etc_dnsmasq_conf()
+        self.write_etc_resolv_dnsmasq_conf()
+        self.write_etc_logrotate_d_dnsmasq()
         return None
 
     def run(self) -> None:

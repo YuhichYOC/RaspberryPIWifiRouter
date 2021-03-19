@@ -26,13 +26,12 @@ class Ufw:
     def wan_interface(self, arg: str):
         self.f_wan_interface = arg
 
-    def run(self) -> None:
-        if self.allow_ssh:
-            subprocess.call(['ufw', 'allow', 'ssh'])
+    @staticmethod
+    def edit_etc_default_ufw() -> None:
         fe = FileEntity.FileEntity()
-        new_content = []
         fe.path = '/etc/default/ufw'
         fe.read()
+        new_content = []
         l_p = re.compile('^#?DEFAULT_FORWARD_POLICY=')
         for line in fe.content:
             l_m = l_p.match(line)
@@ -42,9 +41,14 @@ class Ufw:
                 new_content.append(line)
         fe.content = new_content
         fe.write()
-        new_content.clear()
+        return None
+
+    @staticmethod
+    def edit_etc_ufw_sysctl_conf() -> None:
+        fe = FileEntity.FileEntity()
         fe.path = '/etc/ufw/sysctl.conf'
         fe.read()
+        new_content = []
         l_p = re.compile('^#?net/ipv4/ip_forward=')
         for line in fe.content:
             l_m = l_p.match(line)
@@ -54,6 +58,10 @@ class Ufw:
                 new_content.append(line)
         fe.content = new_content
         fe.write()
+        return None
+
+    def append_etc_ufw_before_rules(self) -> None:
+        fe = FileEntity.FileEntity()
         fe.path = '/etc/ufw/before.rules'
         fe.read()
         fe.content.append('*nat')
@@ -61,6 +69,14 @@ class Ufw:
         fe.content.append('-A POSTROUTING -o ' + self.wan_interface + ' -j MASQUERADE')
         fe.content.append('COMMIT')
         fe.write()
+        return None
+
+    def run(self) -> None:
+        if self.allow_ssh:
+            subprocess.call(['ufw', 'allow', 'ssh'])
+        self.edit_etc_default_ufw()
+        self.edit_etc_ufw_sysctl_conf()
+        self.append_etc_ufw_before_rules()
         subprocess.call(['ufw', 'allow', '53'])
         subprocess.call(['ufw', 'enable'])
         return None

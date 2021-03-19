@@ -74,7 +74,7 @@ class NetPlan:
             '  renderer: NetworkManager',
             '  ethernets:',
             '    ' + self.wan_interface_name + ':',
-            '      dhcp4: trie',
+            '      dhcp4: true',
             '    ' + self.lan_interface_name + ':',
             '      dhcp4: true',
         ]
