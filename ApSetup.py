@@ -1,14 +1,13 @@
 import subprocess
 
-from setup import Dnsmasq, Hostapd, IpTables
+from setup import Dnsmasq, Hostapd, NetPlan, Ufw
 
+IS_TEST_AP = False
+ALLOW_SSH = False
 IS_WIFI_ROUTER = True
-APPROVE_CONNECTION_FROM_WAN = False
 DOMAIN_NAME = ''
 WAN_INTERFACE_NAME = 'eth0'
 LAN_INTERFACE_NAME = 'wlan0'
-GATEWAY4 = ''
-WAN_IP_ADDRESS = ''
 LAN_IP_ADDRESS = ''
 DHCP_RANGE_FROM = ''
 DHCP_RANGE_TO = ''
@@ -16,11 +15,10 @@ ESS_ID = ''
 PASSPHRASE = ''
 
 
-def run_iptables() -> None:
-    l_runner = IpTables.IpTables()
-    l_runner.approve_connection_from_wan = APPROVE_CONNECTION_FROM_WAN
-    l_runner.wan = WAN_INTERFACE_NAME
-    l_runner.lan = LAN_INTERFACE_NAME
+def run_ufw() -> None:
+    l_runner = Ufw.Ufw()
+    l_runner.allow_ssh = ALLOW_SSH
+    l_runner.wan_interface = WAN_INTERFACE_NAME
     l_runner.run()
     return None
 
@@ -47,6 +45,18 @@ def run_hostapd() -> None:
     return None
 
 
+def run_netplan() -> None:
+    l_runner = NetPlan.NetPlan()
+    l_runner.is_test_ap = IS_TEST_AP
+    l_runner.is_wifi_router = IS_WIFI_ROUTER
+    l_runner.wan_interface_name = WAN_INTERFACE_NAME
+    l_runner.lan_interface_name = LAN_INTERFACE_NAME
+    l_runner.ess_id = ESS_ID
+    l_runner.passphrase = PASSPHRASE
+    l_runner.run()
+    return None
+
+
 def enable_hostapd() -> None:
     if IS_WIFI_ROUTER:
         subprocess.call(['systemctl', 'unmask', 'hostapd'])
@@ -62,9 +72,10 @@ def disable_systemd_resolved() -> None:
 
 
 def run() -> None:
-    run_iptables()
+    run_ufw()
     run_dnsmasq()
     run_hostapd()
+    run_netplan()
     enable_hostapd()
     disable_systemd_resolved()
     return None

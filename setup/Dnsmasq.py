@@ -68,14 +68,15 @@ class Dnsmasq:
         return None
 
     @staticmethod
-    def delete_conf_if_exists() -> None:
+    def rename_conf_if_exists() -> None:
         if os.path.isfile('/etc/dnsmasq.conf'):
-            os.remove('/etc/dnsmasq.conf')
+            subprocess.call(['mv', '/etc/dnsmasq.conf', '/etc/dnsmasq.conf.org'])
         return None
 
     def write(self) -> None:
         fe = FileEntity.FileEntity()
-        content = [
+        fe.path = '/etc/dnsmasq.conf'
+        fe.content = [
             'domain-needed',
             'bogus-priv',
             'resolv-file=/etc/resolv.dnsmasq.conf',
@@ -92,30 +93,26 @@ class Dnsmasq:
             'log-queries',
             'log-facility=/var/log/dnsmasq.log',
         ]
-        fe.path = '/etc/dnsmasq.conf'
-        fe.content = content
         fe.write()
-        content = [
+        fe.path = '/etc/resolv.dnsmasq.conf'
+        fe.content = [
             'nameserver 8.8.8.8',
             'nameserver 8.8.4.4',
         ]
-        fe.path = '/etc/resolv.dnsmasq.conf'
-        fe.content = content
         fe.write()
-        content = [
+        fe.path = '/etc/logrotate.d/dnsmasq'
+        fe.content = [
             '/var/log/dnsmasq.log {',
             '    missingok',
             '    rotate 9',
             '    maxsize 100M',
             '}',
         ]
-        fe.path = '/etc/logrotate.d/dnsmasq'
-        fe.content = content
         fe.write()
         return None
 
     def run(self) -> None:
         self.install_dnsmasq()
-        self.delete_conf_if_exists()
+        self.rename_conf_if_exists()
         self.write()
         return None

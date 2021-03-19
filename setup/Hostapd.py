@@ -48,7 +48,9 @@ class Hostapd:
         return None
 
     def write(self) -> None:
-        content = [
+        fe = FileEntity.FileEntity()
+        fe.path = '/etc/hostapd/hostapd.conf'
+        fe.content = [
             'interface=' + self.interface,
             'driver=nl80211',
             'hw_mode=b',
@@ -70,9 +72,6 @@ class Hostapd:
             'ssid=' + self.ess_id,
             'wpa_passphrase=' + self.passphrase,
         ]
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/hostapd/hostapd.conf'
-        fe.content = content
         fe.write()
         return None
 
