@@ -59,16 +59,10 @@ class NetPlan:
     def passphrase(self, arg: str):
         self.f_passphrase = arg
 
-    @staticmethod
-    def write_to_file(a_content: list) -> None:
+    def write_test_router(self) -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/netplan/99-config.yaml'
-        fe.content = a_content
-        fe.write()
-        return None
-
-    def write_test_router(self) -> None:
-        content = [
+        fe.rewrite([
             'network:',
             '  version: 2',
             '  renderer: NetworkManager',
@@ -77,24 +71,26 @@ class NetPlan:
             '      dhcp4: true',
             '    ' + self.lan_interface_name + ':',
             '      dhcp4: true',
-        ]
-        self.write_to_file(content)
+        ])
         return None
 
     def write_wifi_router(self) -> None:
-        content = [
+        fe = FileEntity.FileEntity()
+        fe.path = '/etc/netplan/99-config.yaml'
+        fe.rewrite([
             'network:',
             '  version: 2',
             '  renderer: NetworkManager',
             '  ethernets:',
             '    ' + self.wan_interface_name + ':',
             '      dhcp4: true',
-        ]
-        self.write_to_file(content)
+        ])
         return None
 
     def write_lan_ap(self) -> None:
-        content = [
+        fe = FileEntity.FileEntity()
+        fe.path = '/etc/netplan/99-config.yaml'
+        fe.rewrite([
             'network:',
             '  version: 2',
             '  renderer: NetworkManager',
@@ -107,8 +103,7 @@ class NetPlan:
             '      access-points:',
             '        ' + self.ess_id + ':',
             '          password: ' + self.passphrase,
-        ]
-        self.write_to_file(content)
+        ])
         return None
 
     def run(self) -> None:

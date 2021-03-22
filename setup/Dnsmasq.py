@@ -8,7 +8,6 @@ class Dnsmasq:
 
     def __init__(self):
         self.f_domain_name = ''
-        self.f_wan_interface_name = ''
         self.f_lan_interface_name = ''
         self.f_range_from = ''
         self.f_range_to = ''
@@ -17,10 +16,6 @@ class Dnsmasq:
     @property
     def domain_name(self) -> str:
         return self.f_domain_name
-
-    @property
-    def wan_interface_name(self) -> str:
-        return self.f_wan_interface_name
 
     @property
     def lan_interface_name(self) -> str:
@@ -41,10 +36,6 @@ class Dnsmasq:
     @domain_name.setter
     def domain_name(self, arg: str):
         self.f_domain_name = arg
-
-    @wan_interface_name.setter
-    def wan_interface_name(self, arg: str):
-        self.f_wan_interface_name = arg
 
     @lan_interface_name.setter
     def lan_interface_name(self, arg: str):
@@ -76,12 +67,11 @@ class Dnsmasq:
     def write_etc_dnsmasq_conf(self) -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/dnsmasq.conf'
-        fe.content = [
+        fe.rewrite([
             'domain-needed',
             'bogus-priv',
             'resolv-file=/etc/resolv.dnsmasq.conf',
             'local=/' + self.domain_name + '/',
-            'interface=' + self.wan_interface_name,
             'interface=' + self.lan_interface_name,
             'expand-hosts',
             'domain=' + self.domain_name,
@@ -92,33 +82,30 @@ class Dnsmasq:
             'dhcp-leasefile=/var/lib/misc/dnsmasq.leases',
             'log-queries',
             'log-facility=/var/log/dnsmasq.log',
-        ]
-        fe.write()
+        ])
         return None
 
     @staticmethod
     def write_etc_resolv_dnsmasq_conf() -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/resolv.dnsmasq.conf'
-        fe.content = [
+        fe.rewrite([
             'nameserver 8.8.8.8',
             'nameserver 8.8.4.4',
-        ]
-        fe.write()
+        ])
         return None
 
     @staticmethod
     def write_etc_logrotate_d_dnsmasq() -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/logrotate.d/dnsmasq'
-        fe.content = [
+        fe.rewrite([
             '/var/log/dnsmasq.log {',
             '    missingok',
             '    rotate 9',
             '    maxsize 100M',
             '}',
-        ]
-        fe.write()
+        ])
         return None
 
     def write(self) -> None:

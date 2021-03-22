@@ -1,4 +1,3 @@
-import re
 import subprocess
 
 from . import FileEntity
@@ -27,56 +26,46 @@ class Ufw:
         self.f_wan_interface = arg
 
     @staticmethod
+    def install_ufw() -> None:
+        subprocess.call(['apt', 'install', '-y', 'ufw'])
+        return None
+
+    @staticmethod
     def edit_etc_default_ufw() -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/default/ufw'
-        fe.read()
-        new_content = []
-        l_p = re.compile('^#?DEFAULT_FORWARD_POLICY=')
-        for line in fe.content:
-            l_m = l_p.match(line)
-            if l_m is not None:
-                new_content.append('DEFAULT_FORWARD_POLICY="ACCEPT"')
-            else:
-                new_content.append(line)
-        fe.content = new_content
-        fe.write()
+        fe.replace_regexp('^#?DEFAULT_FORWARD_POLICY=', 'DEFAULT_FORWARD_POLICY="ACCEPT"')
         return None
 
     @staticmethod
     def edit_etc_ufw_sysctl_conf() -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/ufw/sysctl.conf'
-        fe.read()
-        new_content = []
-        l_p = re.compile('^#?net/ipv4/ip_forward=')
-        for line in fe.content:
-            l_m = l_p.match(line)
-            if l_m is not None:
-                new_content.append('net/ipv4/ip_forward=1')
-            else:
-                new_content.append(line)
-        fe.content = new_content
-        fe.write()
+        fe.replace_regexp('^#?net/ipv4/ip_forward=', 'net/ipv4/ip_forward=1')
         return None
 
     def append_etc_ufw_before_rules(self) -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/ufw/before.rules'
-        fe.read()
-        fe.content.append('*nat')
-        fe.content.append(':POSTROUTING ACCEPT [0:0]')
-        fe.content.append('-A POSTROUTING -o ' + self.wan_interface + ' -j MASQUERADE')
-        fe.content.append('COMMIT')
-        fe.write()
+        fe.append([
+            '*nat',
+            ':POSTROUTING ACCEPT [0:0]',
+            '-A POSTROUTING -o ' + self.wan_interface + ' -j MASQUERADE',
+            'COMMIT',
+        ])
         return None
 
     def run(self) -> None:
-        if self.allow_ssh:
-            subprocess.call(['ufw', 'allow', 'ssh'])
+        self.install_ufw()
         self.edit_etc_default_ufw()
         self.edit_etc_ufw_sysctl_conf()
         self.append_etc_ufw_before_rules()
+        if self.allow_ssh:
+            subprocess.call(['ufw', 'allow', 'ssh'])
         subprocess.call(['ufw', 'allow', '53'])
+        subprocess.call(['ufw', 'allow', '67'])
+        subprocess.call(['ufw', 'allow', '68'])
+        subprocess.call(['ufw', 'allow', 'http'])
+        subprocess.call(['ufw', 'allow', 'https'])
         subprocess.call(['ufw', 'enable'])
         return None

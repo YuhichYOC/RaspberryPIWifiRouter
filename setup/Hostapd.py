@@ -7,13 +7,13 @@ from . import FileEntity
 class Hostapd:
 
     def __init__(self):
-        self.f_interface = ''
+        self.f_lan_interface = ''
         self.f_ess_id = ''
         self.f_passphrase = ''
 
     @property
-    def interface(self) -> str:
-        return self.f_interface
+    def lan_interface(self) -> str:
+        return self.f_lan_interface
 
     @property
     def ess_id(self) -> str:
@@ -23,9 +23,9 @@ class Hostapd:
     def passphrase(self) -> str:
         return self.f_passphrase
 
-    @interface.setter
-    def interface(self, arg: str):
-        self.f_interface = arg
+    @lan_interface.setter
+    def lan_interface(self, arg: str):
+        self.f_lan_interface = arg
 
     @ess_id.setter
     def ess_id(self, arg: str):
@@ -47,11 +47,18 @@ class Hostapd:
         os.mkdir('/etc/hostapd/')
         return None
 
-    def write(self) -> None:
+    @staticmethod
+    def write_default_hostapd() -> None:
+        fe = FileEntity.FileEntity()
+        fe.path = '/etc/default/hostapd'
+        fe.replace_regexp('^#?DAEMON_CONF=', 'DAEMON_CONF="/etc/hostapd/hostapd.conf"')
+        return None
+
+    def write_hostapd_conf(self) -> None:
         fe = FileEntity.FileEntity()
         fe.path = '/etc/hostapd/hostapd.conf'
-        fe.content = [
-            'interface=' + self.interface,
+        fe.rewrite([
+            'interface=' + self.lan_interface,
             'driver=nl80211',
             'hw_mode=b',
             'channel=1',
@@ -71,12 +78,12 @@ class Hostapd:
             'rsn_pairwise=CCMP',
             'ssid=' + self.ess_id,
             'wpa_passphrase=' + self.passphrase,
-        ]
-        fe.write()
+        ])
         return None
 
     def run(self) -> None:
         self.install_hostapd()
         self.create_directory()
-        self.write()
+        self.write_default_hostapd()
+        self.write_hostapd_conf()
         return None
