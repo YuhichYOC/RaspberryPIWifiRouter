@@ -1,12 +1,12 @@
 import subprocess
 
-from setup import Dhcpcd, Dnsmasq, Hostapd, NetPlan, Ufw
+from setup import Dhcpcd, Dnsmasq, Hostapd, NetPlan, SystemdNetwork, Ufw
 
-IS_TEST_AP = False
 ALLOW_SSH = True
-# Wifi router setup supports only Raspberry PI OS. Because I don't know how to fix the IP address
-# of the wifi interface, not connecting any wifi network but has this own IP address, with netplan.
-IS_WIFI_ROUTER = True
+IS_WIFI_ROUTER_RPI_OS = True
+IS_WIFI_ROUTER_UBUNTU = False
+IS_WIFI_TO_LAN_ROUTER = False
+IS_LAN_TO_LAN_ROUTER = False
 DOMAIN_NAME = ''
 WAN_INTERFACE_NAME = 'eth0'
 LAN_INTERFACE_NAME = 'wlan0'
@@ -26,11 +26,18 @@ def run_ufw() -> None:
 
 
 def run_dhcpcd() -> None:
-    if IS_WIFI_ROUTER:
-        l_runner = Dhcpcd.Dhcpcd()
-        l_runner.lan_interface = LAN_INTERFACE_NAME
-        l_runner.lan_ip_address = LAN_IP_ADDRESS
-        l_runner.run()
+    l_runner = Dhcpcd.Dhcpcd()
+    l_runner.lan_interface = LAN_INTERFACE_NAME
+    l_runner.lan_ip_address = LAN_IP_ADDRESS
+    l_runner.run()
+    return None
+
+
+def run_systemd_network() -> None:
+    l_runner = SystemdNetwork.SystemdNetwork()
+    l_runner.lan_interface = LAN_INTERFACE_NAME
+    l_runner.lan_ip_address = LAN_IP_ADDRESS
+    l_runner.run()
     return None
 
 
@@ -46,23 +53,21 @@ def run_dnsmasq() -> None:
 
 
 def run_hostapd() -> None:
-    if IS_WIFI_ROUTER:
-        l_runner = Hostapd.Hostapd()
-        l_runner.lan_interface = LAN_INTERFACE_NAME
-        l_runner.ess_id = ESS_ID
-        l_runner.passphrase = PASSPHRASE
-        l_runner.run()
+    l_runner = Hostapd.Hostapd()
+    l_runner.lan_interface = LAN_INTERFACE_NAME
+    l_runner.ess_id = ESS_ID
+    l_runner.passphrase = PASSPHRASE
+    l_runner.run()
     return None
 
 
 def run_netplan() -> None:
-    if IS_WIFI_ROUTER:
-        return None
     l_runner = NetPlan.NetPlan()
-    l_runner.is_test_ap = IS_TEST_AP
-    l_runner.is_wifi_router = IS_WIFI_ROUTER
+    l_runner.is_wifi_router_ubuntu = IS_WIFI_ROUTER_UBUNTU
+    l_runner.is_wifi_to_lan_router = IS_WIFI_TO_LAN_ROUTER
     l_runner.wan_interface_name = WAN_INTERFACE_NAME
     l_runner.lan_interface_name = LAN_INTERFACE_NAME
+    l_runner.lan_ip_address = LAN_IP_ADDRESS
     l_runner.ess_id = ESS_ID
     l_runner.passphrase = PASSPHRASE
     l_runner.run()
@@ -70,15 +75,12 @@ def run_netplan() -> None:
 
 
 def enable_hostapd() -> None:
-    if IS_WIFI_ROUTER:
-        subprocess.call(['systemctl', 'unmask', 'hostapd'])
-        subprocess.call(['systemctl', 'enable', 'hostapd'])
+    subprocess.call(['systemctl', 'unmask', 'hostapd'])
+    subprocess.call(['systemctl', 'enable', 'hostapd'])
     return None
 
 
 def disable_systemd_resolved() -> None:
-    if IS_WIFI_ROUTER:
-        return None
     subprocess.call(['systemctl', 'stop', 'systemd-resolved'])
     subprocess.call(['systemctl', 'disable', 'systemd-resolved'])
     subprocess.call(['systemctl', 'mask', 'systemd-resolved'])
@@ -86,13 +88,30 @@ def disable_systemd_resolved() -> None:
 
 
 def run() -> None:
-    run_ufw()
-    run_dhcpcd()
-    run_dnsmasq()
-    run_hostapd()
-    run_netplan()
-    enable_hostapd()
-    disable_systemd_resolved()
+    if IS_WIFI_ROUTER_RPI_OS:
+        run_ufw()
+        run_dhcpcd()
+        run_dnsmasq()
+        run_hostapd()
+        enable_hostapd()
+    elif IS_WIFI_ROUTER_UBUNTU:
+        run_ufw()
+        run_systemd_network()
+        run_dnsmasq()
+        run_hostapd()
+        run_netplan()
+        enable_hostapd()
+        disable_systemd_resolved()
+    elif IS_WIFI_TO_LAN_ROUTER:
+        run_ufw()
+        run_dnsmasq()
+        run_netplan()
+        disable_systemd_resolved()
+    elif IS_LAN_TO_LAN_ROUTER:
+        run_ufw()
+        run_dnsmasq()
+        run_netplan()
+        disable_systemd_resolved()
     return None
 
 
