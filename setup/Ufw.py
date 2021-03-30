@@ -66,6 +66,6 @@ class Ufw:
         subprocess.call(['ufw', 'allow', 'https'])
         self.edit_etc_default_ufw()
         self.edit_etc_ufw_sysctl_conf()
-        self.append_etc_ufw_user_rules()
         subprocess.call(['ufw', 'enable'])
+        self.append_etc_ufw_user_rules()
         return None
