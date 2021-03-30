@@ -57,9 +57,6 @@ class Ufw:
 
     def run(self) -> None:
         self.install_ufw()
-        self.edit_etc_default_ufw()
-        self.edit_etc_ufw_sysctl_conf()
-        self.append_etc_ufw_user_rules()
         if self.allow_ssh:
             subprocess.call(['ufw', 'allow', 'ssh'])
         subprocess.call(['ufw', 'allow', '53'])
@@ -67,5 +64,8 @@ class Ufw:
         subprocess.call(['ufw', 'allow', '68'])
         subprocess.call(['ufw', 'allow', 'http'])
         subprocess.call(['ufw', 'allow', 'https'])
+        self.edit_etc_default_ufw()
+        self.edit_etc_ufw_sysctl_conf()
+        self.append_etc_ufw_user_rules()
         subprocess.call(['ufw', 'enable'])
         return None
