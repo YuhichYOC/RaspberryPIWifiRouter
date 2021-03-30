@@ -44,9 +44,9 @@ class Ufw:
         fe.replace_regexp('^#?net/ipv4/ip_forward=', 'net/ipv4/ip_forward=1')
         return None
 
-    def append_etc_ufw_before_rules(self) -> None:
+    def append_etc_ufw_user_rules(self) -> None:
         fe = FileEntity.FileEntity()
-        fe.path = '/etc/ufw/before.rules'
+        fe.path = '/etc/ufw/user.rules'
         fe.append([
             '*nat',
             ':POSTROUTING ACCEPT [0:0]',
@@ -59,7 +59,7 @@ class Ufw:
         self.install_ufw()
         self.edit_etc_default_ufw()
         self.edit_etc_ufw_sysctl_conf()
-        self.append_etc_ufw_before_rules()
+        self.append_etc_ufw_user_rules()
         if self.allow_ssh:
             subprocess.call(['ufw', 'allow', 'ssh'])
         subprocess.call(['ufw', 'allow', '53'])
