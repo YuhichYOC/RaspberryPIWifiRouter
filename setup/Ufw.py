@@ -50,6 +50,7 @@ class Ufw:
         fe.append([
             '*nat',
             ':POSTROUTING ACCEPT [0:0]',
+            '-F',
             '-A POSTROUTING -o ' + self.wan_interface + ' -j MASQUERADE',
             'COMMIT',
         ])
