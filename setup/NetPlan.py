@@ -76,52 +76,38 @@ class NetPlan:
         return None
 
     def write_wifi_router_ubuntu(self) -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/netplan/99-config.yaml'
-        fe.rewrite([
-            'network:',
-            '  version: 2',
-            '  renderer: networkd',
-            '  ethernets:',
-            '    ' + self.wan_interface_name + ':',
-            '      dhcp4: true',
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/netplan/99_wifi_router_ubuntu.yaml'
+        source.read()
+        source.content_replace('WAN_INTERFACE_NAME', self.wan_interface_name)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/netplan/99-config.yaml'
+        target.rewrite(source.content)
         return None
 
     def write_wifi_to_lan_ap(self) -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/netplan/99-config.yaml'
-        fe.rewrite([
-            'network:',
-            '  version: 2',
-            '  renderer: NetworkManager',
-            '  ethernets:',
-            '    ' + self.lan_interface_name + ':',
-            '      dhcp4: true',
-            '  wifis:',
-            '    ' + self.wan_interface_name + ':',
-            '      dhcp4: true',
-            '      access-points:',
-            '        ' + self.ess_id + ':',
-            '          password: ' + self.passphrase,
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/netplan/99_wifi_to_lan_ap_ubuntu.yaml'
+        source.read()
+        source.content_replace('LAN_INTERFACE_NAME', self.lan_interface_name)
+        source.content_replace('WAN_INTERFACE_NAME', self.wan_interface_name)
+        source.content_replace('ESS_ID', self.ess_id)
+        source.content_replace('PASSPHRASE', self.passphrase)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/netplan/99-config.yaml'
+        target.rewrite(source.content)
         return None
 
     def write_lan_to_lan_ap(self) -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/netplan/99-config.yaml'
-        fe.rewrite([
-            'network:',
-            '  version: 2',
-            '  ethernets:',
-            '    ' + self.wan_interface_name + ':',
-            '      dhcp4: true',
-            '    ' + self.lan_interface_name + ':',
-            '      addresses: [',
-            '        ' + self.lan_ip_address + '/24',
-            '      ]',
-            '      dhcp4: false',
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/netplan/99_lan_to_lan_ap_ubuntu.yaml'
+        source.read()
+        source.content_replace('WAN_INTERFACE_NAME', self.wan_interface_name)
+        source.content_replace('LAN_INTERFACE_NAME', self.lan_interface_name)
+        source.content_replace('LAN_IP_ADDRESS', self.lan_ip_address)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/netplan/99-config.yaml'
+        target.rewrite(source.content)
         return None
 
     def run(self) -> None:

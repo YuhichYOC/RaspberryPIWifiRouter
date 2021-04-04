@@ -1,0 +1,5 @@
+[Match]
+Name=LAN_INTERFACE
+
+[Network]
+Address=LAN_IP_ADDRESS/24

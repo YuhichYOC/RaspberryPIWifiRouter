@@ -49,36 +49,21 @@ class Hostapd:
 
     @staticmethod
     def write_default_hostapd() -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/default/hostapd'
-        fe.replace_regexp('^#?DAEMON_CONF=', 'DAEMON_CONF="/etc/hostapd/hostapd.conf"')
+        target = FileEntity.FileEntity()
+        target.path = '/etc/default/hostapd'
+        target.content_replace_regexp('templates/etc/default/hostapd')
         return None
 
     def write_hostapd_conf(self) -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/hostapd/hostapd.conf'
-        fe.rewrite([
-            'interface=' + self.lan_interface,
-            'driver=nl80211',
-            'hw_mode=b',
-            'channel=1',
-            'macaddr_acl=0',
-            'auth_algs=1',
-            'ignore_broadcast_ssid=0',
-            'ieee80211ac=0',
-            'wmm_enabled=1',
-            'ieee80211d=1',
-            'ieee80211h=1',
-            'country_code=JP',
-            'local_pwr_constraint=3',
-            'spectrum_mgmt_required=1',
-            'wpa=2',
-            'wpa_key_mgmt=WPA-PSK',
-            'wpa_pairwise=CCMP',
-            'rsn_pairwise=CCMP',
-            'ssid=' + self.ess_id,
-            'wpa_passphrase=' + self.passphrase,
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/hostapd/hostapd.conf'
+        source.read()
+        source.content_replace('LAN_INTERFACE_NAME', self.lan_interface)
+        source.content_replace('ESS_ID', self.ess_id)
+        source.content_replace('PASSPHRASE', self.passphrase)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/hostapd/hostapd.conf'
+        target.rewrite(source.content)
         return None
 
     def run(self) -> None:

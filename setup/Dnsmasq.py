@@ -65,47 +65,37 @@ class Dnsmasq:
         return None
 
     def write_etc_dnsmasq_conf(self) -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/dnsmasq.conf'
-        fe.rewrite([
-            'domain-needed',
-            'bogus-priv',
-            'resolv-file=/etc/resolv.dnsmasq.conf',
-            'local=/' + self.domain_name + '/',
-            'interface=' + self.lan_interface_name,
-            'expand-hosts',
-            'domain=' + self.domain_name,
-            'dhcp-range=' + self.range_from + ',' + self.range_to + ',24h',
-            'dhcp-option=option:netmask,255.255.255.0',
-            'dhcp-option=option:router,' + self.router_ip,
-            'dhcp-option=option:dns-server,' + self.router_ip,
-            'dhcp-leasefile=/var/lib/misc/dnsmasq.leases',
-            'log-queries',
-            'log-facility=/var/log/dnsmasq.log',
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/dnsmasq.conf'
+        source.read()
+        source.content_replace('DOMAIN_NAME', self.domain_name)
+        source.content_replace('LAN_INTERFACE_NAME', self.lan_interface_name)
+        source.content_replace('DHCP_RANGE_FROM', self.range_from)
+        source.content_replace('DHCP_RANGE_TO', self.range_to)
+        source.content_replace('ROUTER_IP_ADDRESS', self.router_ip)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/dnsmasq.conf'
+        target.rewrite(source.content)
         return None
 
     @staticmethod
     def write_etc_resolv_dnsmasq_conf() -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/resolv.dnsmasq.conf'
-        fe.rewrite([
-            'nameserver 8.8.8.8',
-            'nameserver 8.8.4.4',
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/resolv.dnsmasq.conf'
+        source.read()
+        target = FileEntity.FileEntity()
+        target.path = '/etc/resolv.dnsmasq.conf'
+        target.rewrite(source.content)
         return None
 
     @staticmethod
     def write_etc_logrotate_d_dnsmasq() -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/logrotate.d/dnsmasq'
-        fe.rewrite([
-            '/var/log/dnsmasq.log {',
-            '    missingok',
-            '    rotate 9',
-            '    maxsize 100M',
-            '}',
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/logrotate.d/dnsmasq'
+        source.read()
+        target = FileEntity.FileEntity()
+        target.path = '/etc/logrotate.d/dnsmasq'
+        target.rewrite(source.content)
         return None
 
     def write(self) -> None:

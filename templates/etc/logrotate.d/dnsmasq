@@ -1,0 +1,5 @@
+/var/log/dnsmasq.log {
+    missingok
+    rotate 9
+    maxsize 100M
+}

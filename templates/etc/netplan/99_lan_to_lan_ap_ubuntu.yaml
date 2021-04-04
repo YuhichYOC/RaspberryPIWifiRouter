@@ -1,0 +1,10 @@
+network:
+  version: 2
+  ethernets:
+    WAN_INTERFACE_NAME:
+      dhcp4: true
+    LAN_INTERFACE_NAME:
+      addresses: [
+          LAN_IP_ADDRESS/24
+      ]
+      dhcp4: false

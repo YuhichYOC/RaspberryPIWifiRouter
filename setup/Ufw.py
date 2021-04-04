@@ -32,28 +32,26 @@ class Ufw:
 
     @staticmethod
     def edit_etc_default_ufw() -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/default/ufw'
-        fe.replace_regexp('^#?DEFAULT_FORWARD_POLICY=', 'DEFAULT_FORWARD_POLICY="ACCEPT"')
+        target = FileEntity.FileEntity()
+        target.path = '/etc/default/ufw'
+        target.content_replace_regexp('templates/etc/default/ufw')
         return None
 
     @staticmethod
     def edit_etc_ufw_sysctl_conf() -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/ufw/sysctl.conf'
-        fe.replace_regexp('^#?net/ipv4/ip_forward=', 'net/ipv4/ip_forward=1')
+        target = FileEntity.FileEntity()
+        target.path = '/etc/ufw/sysctl.conf'
+        target.content_replace_regexp('templates/etc/ufw/sysctl.conf')
         return None
 
     def append_etc_ufw_before_rules(self) -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/ufw/before.rules'
-        fe.append([
-            '*nat',
-            ':POSTROUTING ACCEPT [0:0]',
-            '-F',
-            '-A POSTROUTING -o ' + self.wan_interface + ' -j MASQUERADE',
-            'COMMIT',
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/ufw/before.rules'
+        source.read()
+        source.content_replace('WAN_INTERFACE_NAME', self.wan_interface)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/ufw/before.rules'
+        target.append(source.content)
         return None
 
     def run(self) -> None:

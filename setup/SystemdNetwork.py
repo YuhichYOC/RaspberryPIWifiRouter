@@ -24,15 +24,14 @@ class SystemdNetwork:
         self.f_lan_ip_address = arg
 
     def write(self) -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/systemd/network/' + self.lan_interface + '.network'
-        fe.rewrite([
-            '[Match]',
-            'Name=' + self.lan_interface,
-            '',
-            '[Network]',
-            'Address=' + self.lan_ip_address + '/24',
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/systemd/network/lan_interface.network'
+        source.read()
+        source.content_replace('LAN_INTERFACE', self.lan_interface)
+        source.content_replace('LAN_IP_ADDRESS', self.lan_ip_address)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/systemd/network/' + self.lan_interface + '.network'
+        target.rewrite(source.content)
         return None
 
     def run(self) -> None:

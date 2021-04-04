@@ -24,13 +24,14 @@ class Dhcpcd:
         self.f_lan_ip_address = arg
 
     def write(self) -> None:
-        fe = FileEntity.FileEntity()
-        fe.path = '/etc/dhcpcd.conf'
-        fe.append([
-            '',
-            'interface ' + self.lan_interface,
-            'static ip_address=' + self.lan_ip_address + '/24',
-        ])
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/dhcpcd.conf'
+        source.read()
+        source.content_replace('LAN_INTERFACE_NAME', self.lan_interface)
+        source.content_replace('LAN_IP_ADDRESS', self.lan_ip_address)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/dhcpcd.conf'
+        target.append(source.content)
         return None
 
     def run(self) -> None:

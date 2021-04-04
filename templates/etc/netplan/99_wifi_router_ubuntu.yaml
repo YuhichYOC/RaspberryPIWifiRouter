@@ -1,0 +1,6 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    WAN_INTERFACE_NAME:
+      dhcp4: true
