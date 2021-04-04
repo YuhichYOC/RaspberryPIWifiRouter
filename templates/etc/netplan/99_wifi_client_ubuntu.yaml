@@ -1,0 +1,12 @@
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    LAN_INTERFACE_NAME:
+      dhcp4: true
+  wifis:
+    WAN_INTERFACE_NAME:
+      dhcp4: true
+      access-points:
+        ESS_ID:
+          password: PASSPHRASE

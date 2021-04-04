@@ -7,6 +7,7 @@ IS_WIFI_ROUTER_RPI_OS = True
 IS_WIFI_ROUTER_UBUNTU = False
 IS_WIFI_TO_LAN_ROUTER = False
 IS_LAN_TO_LAN_ROUTER = False
+IS_WIFI_CLIENT = False
 DOMAIN_NAME = ''
 WAN_INTERFACE_NAME = 'eth0'
 LAN_INTERFACE_NAME = 'wlan0'
@@ -65,6 +66,7 @@ def run_netplan() -> None:
     l_runner = NetPlan.NetPlan()
     l_runner.is_wifi_router_ubuntu = IS_WIFI_ROUTER_UBUNTU
     l_runner.is_wifi_to_lan_router = IS_WIFI_TO_LAN_ROUTER
+    l_runner.is_wifi_client = IS_WIFI_CLIENT
     l_runner.wan_interface_name = WAN_INTERFACE_NAME
     l_runner.lan_interface_name = LAN_INTERFACE_NAME
     l_runner.lan_ip_address = LAN_IP_ADDRESS
@@ -112,6 +114,8 @@ def run() -> None:
         run_dnsmasq()
         run_netplan()
         disable_systemd_resolved()
+    elif IS_WIFI_CLIENT:
+        run_netplan()
     return None
 
 
