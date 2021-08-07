@@ -1,0 +1,11 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    WAN_INTERFACE_NAME:
+      dhcp4: true
+    LAN_2_WAY_INTERFACE_NAME:
+      addresses: [
+          LAN_2_WAY_ETH_IP_ADDRESS_WITH_MASK
+      ]
+      dhcp4: false
