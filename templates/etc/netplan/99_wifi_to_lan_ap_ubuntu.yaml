@@ -3,7 +3,10 @@ network:
   renderer: NetworkManager
   ethernets:
     LAN_INTERFACE_NAME:
-      dhcp4: true
+      addresses: [
+          LAN_IP_ADDRESS/24
+      ]
+      dhcp4: false
   wifis:
     WAN_INTERFACE_NAME:
       dhcp4: true

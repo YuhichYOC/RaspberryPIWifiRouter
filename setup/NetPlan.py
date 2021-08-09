@@ -135,6 +135,7 @@ class NetPlan:
         source.path = 'templates/etc/netplan/99_wifi_to_lan_ap_ubuntu.yaml'
         source.read()
         source.content_replace('LAN_INTERFACE_NAME', self.lan_interface_name)
+        source.content_replace('LAN_IP_ADDRESS', self.lan_ip_address)
         source.content_replace('WAN_INTERFACE_NAME', self.wan_interface_name)
         source.content_replace('ESS_ID', self.ess_id)
         source.content_replace('PASSPHRASE', self.passphrase)
