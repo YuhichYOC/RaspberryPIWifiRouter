@@ -11,6 +11,7 @@ class NetPlan:
         self.f_is_lan_to_lan_router_ubuntu = False
         self.f_is_wifi_client_ubuntu = False
         self.f_is_2_way_router_ubuntu = False
+        self.f_is_lan_to_wifi_bridge_ubuntu = False
         self.f_wan_interface_name = ''
         self.f_lan_interface_name = ''
         self.f_lan_ip_address = ''
@@ -38,6 +39,10 @@ class NetPlan:
     @property
     def is_2_way_router_ubuntu(self) -> bool:
         return self.f_is_2_way_router_ubuntu
+
+    @property
+    def is_lan_to_wifi_bridge_ubuntu(self) -> bool:
+        return self.f_is_lan_to_wifi_bridge_ubuntu
 
     @property
     def wan_interface_name(self) -> str:
@@ -86,6 +91,10 @@ class NetPlan:
     @is_2_way_router_ubuntu.setter
     def is_2_way_router_ubuntu(self, arg: bool):
         self.f_is_2_way_router_ubuntu = arg
+
+    @is_lan_to_wifi_bridge_ubuntu.setter
+    def is_lan_to_wifi_bridge_ubuntu(self, arg: bool):
+        self.f_is_lan_to_wifi_bridge_ubuntu = arg
 
     @wan_interface_name.setter
     def wan_interface_name(self, arg: str):
@@ -181,6 +190,16 @@ class NetPlan:
         target.rewrite(source.content)
         return None
 
+    def write_lan_to_wifi_bridge_ubuntu(self) -> None:
+        source = FileEntity.FileEntity()
+        source.path = 'templates/etc/netplan/99_lan_to_wifi_bridge_ubuntu.yaml'
+        source.read()
+        source.content_replace('WAN_INTERFACE_NAME', self.wan_interface_name)
+        target = FileEntity.FileEntity()
+        target.path = '/etc/netplan/99-config.yaml'
+        target.rewrite(source.content)
+        return None
+
     def run(self) -> None:
         if self.is_wifi_router_ubuntu:
             self.write_wifi_router_ubuntu()
@@ -194,4 +213,6 @@ class NetPlan:
             self.write_wifi_client_ubuntu()
         elif self.is_2_way_router_ubuntu:
             self.write_2_way_router_ubuntu()
+        elif self.is_lan_to_wifi_bridge_ubuntu:
+            self.write_lan_to_wifi_bridge_ubuntu()
         return None

@@ -1,0 +1,10 @@
+network:
+  version: 2
+  ethernets:
+    WAN_INTERFACE_NAME:
+      dhcp4: true
+  bridges:
+    br0:
+      interfaces:
+        - WAN_INTERFACE_NAME
+      dhcp4: true

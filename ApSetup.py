@@ -9,6 +9,7 @@ IS_WIFI_TO_LAN_ROUTER_UBUNTU = False
 IS_LAN_TO_LAN_ROUTER_UBUNTU = False
 IS_WIFI_CLIENT_UBUNTU = False
 IS_2_WAY_ROUTER_UBUNTU = False
+IS_LAN_TO_WIFI_BRIDGE_UBUNTU = False
 DOMAIN_NAME = ''
 WAN_INTERFACE_NAME = 'eth0'
 LAN_INTERFACE_NAME = 'wlan0'
@@ -60,6 +61,7 @@ def run_dhcpcd() -> None:
 
 def run_systemd_network() -> None:
     l_runner = SystemdNetwork.SystemdNetwork()
+    l_runner.is_lan_to_wifi_bridge_ubuntu = IS_LAN_TO_WIFI_BRIDGE_UBUNTU
     l_runner.lan_interface = LAN_INTERFACE_NAME
     l_runner.lan_ip_address = LAN_IP_ADDRESS
     l_runner.run()
@@ -105,6 +107,7 @@ def run_dnsmasq_2_way() -> None:
 
 def run_hostapd() -> None:
     l_runner = Hostapd.Hostapd()
+    l_runner.is_lan_to_wifi_bridge_ubuntu = IS_LAN_TO_WIFI_BRIDGE_UBUNTU
     l_runner.lan_interface = LAN_INTERFACE_NAME
     l_runner.ess_id = ESS_ID
     l_runner.passphrase = PASSPHRASE
@@ -125,7 +128,9 @@ def run_netplan() -> None:
     l_runner = NetPlan.NetPlan()
     l_runner.is_wifi_router_ubuntu = IS_WIFI_ROUTER_UBUNTU
     l_runner.is_wifi_to_lan_router_ubuntu = IS_WIFI_TO_LAN_ROUTER_UBUNTU
+    l_runner.is_lan_to_lan_router_ubuntu = IS_LAN_TO_LAN_ROUTER_UBUNTU
     l_runner.is_wifi_client_ubuntu = IS_WIFI_CLIENT_UBUNTU
+    l_runner.is_lan_to_wifi_bridge_ubuntu = IS_LAN_TO_WIFI_BRIDGE_UBUNTU
     l_runner.wan_interface_name = WAN_INTERFACE_NAME
     l_runner.lan_interface_name = LAN_INTERFACE_NAME
     l_runner.lan_ip_address = LAN_IP_ADDRESS
@@ -193,6 +198,11 @@ def run() -> None:
         run_netplan_2_way()
         enable_hostapd()
         disable_systemd_resolved()
+    elif IS_LAN_TO_WIFI_BRIDGE_UBUNTU:
+        run_hostapd()
+        run_netplan()
+        run_systemd_network()
+        enable_hostapd()
     return None
 
 
