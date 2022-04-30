@@ -1,6 +1,6 @@
 import subprocess
 
-from setup import Dhcpcd, Dnsmasq, Hostapd, NetPlan, SystemdNetwork, Ufw
+from setup import Dhcpcd, Dnsmasq, Hostapd, NetPlan, Sysctl, SystemdNetwork, Ufw
 
 ALLOW_SSH = True
 IS_WIFI_ROUTER_RPI_OS = True
@@ -150,6 +150,12 @@ def run_netplan_2_way() -> None:
     return None
 
 
+def run_sysctl_for_bridge() -> None:
+    l_runner = Sysctl.Sysctl()
+    l_runner.run()
+    return None
+
+
 def enable_hostapd() -> None:
     subprocess.call(['systemctl', 'unmask', 'hostapd'])
     subprocess.call(['systemctl', 'enable', 'hostapd'])
@@ -202,6 +208,7 @@ def run() -> None:
         run_hostapd()
         run_netplan()
         run_systemd_network()
+        run_sysctl_for_bridge()
         enable_hostapd()
     return None
 
